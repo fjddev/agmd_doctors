@@ -234,6 +234,36 @@ class DoctorDB {
                 
     }    
     
+    /*
+     * 
+     * Return an array that that has distinct interest values
+     * 
+     */
+    
+    public function get_distinct_interests(){
+        $db = Database::getDB();
+        $query = "select distinct interest
+                  from doctor_interest
+                  order by interest";
+        
+        $statement = $db->prepare($query);
+       
+        $statement->execute();          
+        
+        
+        $doctor_interests = array();
+        $counter = 0;
+        foreach ($statement as $row) {
+
+
+            $doctor_interests[$counter]=$row['interest'];
+            $counter++;
+
+        }     
+
+        return $doctor_interests;
+    }
+    
     public function getDoctorInterests($doctor_id){
         $db = Database::getDB();
         $query = 'SELECT * FROM doctor_interest
@@ -291,25 +321,89 @@ class DoctorDB {
         return $doctor_list;
     }
     
-    public function getDoctorInterestArray($doctor_id ){
+    /**
+     * Usage: returns the state and a particular interest
+     * @param type $state
+     * @param type $interest
+     * @return type Array
+     */
+    public function getDoctorReportByInterestArray($state, $interest ){
         $db = Database::getDB();
-        $query='SELECT interest from doctor_interest
-            WHERE doctor_id = :doctor_id'; 
-  
+        $query='SELECT d.doctor_id, concat_ws(" ",credentials, first_name, + last_name) as name, state 
+                FROM doctor d join address_us a on (d.doctor_id = a.doctor_id)
+                and a.state=:state
+                order by trim(last_name)';    
         $statement = $db->prepare($query);     
-        $statement->bindValue(':doctor_id', $doctor_id);   
-        $statement->execute();
-        $doctor_interest=Array();    
-        $counter=0;
-        foreach ($statement as $row) {
+        $statement->bindValue(':state', $state);   
+        $statement->execute();   
 
-            $doctor_interest[$counter]=$row['interest'];
-            ++$counter;
+        $doctor_list=Array();     
+        foreach ($statement as $row) {
+            $id = $row['doctor_id'];
+            $interest_found = $this->findDoctorInterest($id, $interest);
+            if($interest_found){
+                $doctor_list[$row['doctor_id']]['name']=$row['name'];
+                $doctor_list[$row['doctor_id']]['state']=$row['state']; 
+                $doctor_list[$row['doctor_id']]['interest']=$interest;
+            }
+ 
 
         }
 
-        return $doctor_interest;        
+        return $doctor_list;
     }    
+    
+    
+       public function getDoctorReportByState($state,$interest ){
+        $db = Database::getDB();
+        $query='SELECT d.doctor_id, concat_ws(" ",credentials, first_name, + last_name) as name, state, i.interest 
+                FROM doctor d join address_us a on (d.doctor_id = a.doctor_id)
+				join doctor_interest i  on (i.interest = :interest and i.doctor_id = d.doctor_id)
+                and a.state=:state
+                order by trim(last_name)';    
+        $statement = $db->prepare($query);     
+        $statement->bindValue(':state', $state);   
+        $statement->bindValue(':interest', $interest); 
+        $statement->execute();   
+
+        $doctor_list=Array();     
+        foreach ($statement as $row) {
+            $id = $row['doctor_id'];
+            $doctor_list[$row['doctor_id']]['name']=$row['name'];
+            $doctor_list[$row['doctor_id']]['state']=$row['state']; 
+            $doctor_list[$row['doctor_id']]['interest']=$row['interest'];
+
+ 
+
+        }
+
+        return $doctor_list;
+    }
+    
+    
+    
+    
+  
+  public function findDoctorInterest($doctor_id, $interest ){
+        $db = Database::getDB();
+        $query='SELECT interest from doctor_interest
+            WHERE doctor_id = :doctor_id 
+            AND interest = :interest'; 
+  
+        $statement = $db->prepare($query);     
+        $statement->bindValue(':doctor_id', $doctor_id);   
+        $statement->bindValue(':interest', $interest); 
+        $statement->execute();
+        $number_of_rows = count($statement->fetchAll());
+
+        if($number_of_rows >0){
+            return true;
+        }
+        
+        return false;
+
+      
+    }        
     public function getCountryArray(){
         $db = Database::getDB();
         $query = 'SELECT * FROM country_lookup order by countryname';

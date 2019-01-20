@@ -8,28 +8,24 @@
 
      
      $headings=Array('Name', 'State', 'Interest');
-//     $doctor_list=Array();
-//     $doctor_list[1]['name'] = 'Dr Paul Flores';
-//     $doctor_list[1]['state'] = 'MA';
-//     $doctor_list[1]['interest'] = array();
-//     $doctor_list[1]['interest'][0]='CIP';
-//     $doctor_list[1]['interest'][1]='CHRONS';
+
         $doctorDB = new DoctorDB(); 
         $state = filter_input(INPUT_POST, 'state_selected');
         $interest = filter_input(INPUT_POST, 'interest_selected');
-
+        
         $doctor_list = Array();
-        $doctor_list=$doctorDB->getDoctorReportArray($state);
+        $doctor_list=$doctorDB->getDoctorReportByInterestArray($state, $interest);        
         
-
-        
-
-        
-
-        
+        if(empty($doctor_list)){ 
+            echo "<h4 style='color: black'> <center>No Doctor found with interest: '{$interest}' in '{$state}'</center></h4>";
+        }else{
+            echo "<h4 style='color: black'> <center>Interest  '{$interest}'  Found in '{$state}'.</center></h4>";
+        }
+          
 
 ?>
 <main>
+    <?php  if(!empty($doctor_list)){  ?>
     <table>
         <tr>
             <?php foreach($headings as $heading) : ?>
@@ -41,32 +37,10 @@
         <?php foreach($doctor_list as $id=>$doctor) : ?>
             <tr>
                  <?php    foreach($doctor as $key=>$doctor_results) : ?>
-                
 
-                
-                       <?php 
-                       if($key == 'interest'){
-
-                           $doctor_interest = $doctor_results; ?>
-                <td>
-                           <select>
-                           <?php foreach($doctor_interest as $interest): ?>
-                                <option value="<?php echo $key; ?>" >  <?php echo $interest; ?> </option>
-                           <?php endforeach; ?>
-                           
-                           </select>
-                </td>   
-
-                 
-                              
-                       <?php }else{ ?>
-            <td>
-                            <?php echo $doctor[$key];  ?>   
-            </td>
-                             
-                       <?php }?>
-
-               
+                                <td>
+                                  <?php echo $doctor[$key];  ?>   
+                                </td>
                      <?php endforeach; ?>
             <td>
                   <form action="../doctor_manager/index.php" method="post" id="doctor_report_by_state_interest">
@@ -80,6 +54,7 @@
         <?php endforeach; ?>
     </table>
 </main>    
+    <?php } ?>    <!-- doctor_list not empty -->
 <?php include '../view/header.php'; ?>
         
     

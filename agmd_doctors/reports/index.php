@@ -1,6 +1,7 @@
 
 
 <?php include '../view/header.php'; ?>
+
 <?php
              $us_states=Array(
                     'AL' => 'Alabama',
@@ -55,16 +56,23 @@
                     'WI' => 'Wisconsin',
                     'WY' => 'Wyoming',
                   );  
+             
+    $doctorDB = new DoctorDB(); 
+
+
+             
+ 
    ?>   
     <table>
 
 
             <th> <?php echo "Report" ?></th>
-            <th><?php echo "Filter" ?></th>      
+            <th>Filter1</th>      
+            <th>Filter2</th>
             <th><?php echo "Select" ?></th>   
         <tr>
           <form  method="post" action="../reports/doctorByStateReport.php" >
-            <td>Report by doctor interest and us state </td>
+            <td>US Doctor Report by State and all interests  </td>
             <td>  
                 <select name="state_selected" id="state_selected" >
                         <?php foreach($us_states as $key=>$state): ?>
@@ -73,6 +81,7 @@
 
                 </select>
             </td>
+            <td>&nbsp;</td>
             <td>
                  <input type="submit" value="Report"> 
             </td>                 
@@ -80,6 +89,38 @@
 
  
         </tr>
+        
+        <tr>
+          <form  method="post" action="../reports/doctorByStateInterestReport.php" >
+            <td>US Doctor Report by State and interest  </td>
+            <td>  
+                <select name="state_selected" id="state_selected" >
+                        <?php foreach($us_states as $key=>$state): ?>
+                              <option value="<?php echo $key; ?>" >  <?php echo $state; ?> </option>
+                        <?php endforeach; ?>
+
+                </select>
+            </td>
+            <td>  
+                <?php
+                         $interests = Array();
+                         $interests=$doctorDB->get_distinct_interests();
+        
+                ?>
+                <select name="interest_selected" id="interest_selected" >
+                        <?php foreach($interests as $interest): ?>
+                              <option value="<?php echo $interest; ?>" >  <?php echo $interest; ?> </option>
+                        <?php endforeach; ?>
+
+                </select>
+            </td>            
+            <td>
+                 <input type="submit" value="Report"> 
+            </td>                 
+           </form>
+
+ 
+        </tr>        
     </table>
 
 <?php include '../view/footer.php'; ?>
